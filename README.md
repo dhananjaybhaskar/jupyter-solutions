@@ -8,7 +8,7 @@
     pip install git+https://github.com/sswatson/jupyter-solutions
     ```
 
-2. Make a Jupyter notebook. End lines or begin cells with ` # solutions` and ` # worksheet` to make them visible only in the worksheet or solutions version. Choose a file name that ends in `-master.ipynb`. 
+2. Make a Jupyter notebook. End lines or begin cells with ` # solution` and ` # worksheet` to make them visible only in the worksheet or solutions version. Choose a file name that ends in `-master.ipynb`. 
 
 3. Type `python` at the command line and run the following two lines of code:
 
