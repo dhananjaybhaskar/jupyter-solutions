@@ -29,12 +29,16 @@ def write_worksheet(filename=None):
             if line.startswith("# solution"):
                 break
             if not line.strip().endswith(" # solution"):
-                worksheet_source.append(line.replace(" # worksheet",""))
+                newline = line.replace("# worksheet","")
+                if isspace(line) or not isspace(newline):
+                    worksheet_source.append(newline)
         for line in cell['source']:
             if line.startswith("# worksheet"):
                 break
             if not line.strip().endswith(" # worksheet"):
-                sol_source.append(line.replace(" # solution",""))
+                newline = line.replace("# solution","")
+                if isspace(line) or not isspace(newline):
+                    sol_source.append(newline)
         cell['source'] = worksheet_source
         worksheet_cells.append(deepcopy(cell))
         cell['source'] = sol_source
