@@ -13,6 +13,6 @@
 3. Type `python` at the command line and run the following two lines of code:
 
     ```python
-    from jupytersolutions import write_worksheet
-    write_worksheet()
+    from jupytersolutions import write_all
+    write_all()
     ```
