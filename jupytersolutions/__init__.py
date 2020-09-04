@@ -8,18 +8,18 @@ import sys
 
 def process_cell(cell, keep_keyword, strip_keyword):
     """
-    Removes lines which end with the trigger '# {keyword}'
+    Removes lines which end with the trigger '#{keyword}'
     """
     cell = deepcopy(cell)
     source = []
     if len(cell['source']) == 0:
         return cell
-    if cell['source'][0].startswith(f"# {strip_keyword}"):
+    if cell['source'][0].startswith(f"#{strip_keyword}"):
         return None
     for line in cell['source']:
-        if line.strip().endswith(f"# {strip_keyword}"):
+        if line.strip().endswith(f"#{strip_keyword}"):
             continue
-        newline = line.replace(f"# {keep_keyword}","")
+        newline = line.replace(f"#{keep_keyword}", "")
         if line.isspace() or not newline.isspace():
             source.append(newline)
     cell['source'] = source
@@ -43,9 +43,9 @@ def process_doc(master,
         doc = fix_numbers_doc(doc)
     newfilename = master.replace("-master",append_string)
     with open(newfilename,"w") as f:
-        print("Writing " + master.replace("-master",append_string))
+        print("Writing " + newfilename)
         json.dump(doc,f)
-        os.system("jupyter trust " + filename)
+    os.system("jupyter trust " + newfilename)
 
 def write_all(filename=None):
     if filename is None:
