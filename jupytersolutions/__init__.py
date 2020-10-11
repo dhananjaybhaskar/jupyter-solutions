@@ -25,10 +25,10 @@ def process_cell(cell, keep_keyword, strip_keyword):
     cell['source'] = source
     return cell
 
-def process_doc(master, 
-                original_doc, 
-                append_string, 
-                keep_keyword, 
+def process_doc(main,
+                original_doc,
+                append_string,
+                keep_keyword,
                 strip_keyword,
                 fix_numbers = True):
     try:
@@ -41,7 +41,7 @@ def process_doc(master,
     doc['cells'] = cells
     if fix_numbers:
         doc = fix_numbers_doc(doc)
-    newfilename = master.replace("-master",append_string)
+    newfilename = main.replace("-main",append_string)
     with open(newfilename,"w") as f:
         print("Writing " + newfilename)
         json.dump(doc,f)
@@ -50,15 +50,15 @@ def process_doc(master,
 def write_all(filename=None):
     if filename is None:
         for name in os.listdir("."):
-            if "-master.ipynb" in name:
+            if "-main.ipynb" in name:
                 print("Using " + name)
                 filename = name
                 break
     if filename is None:
-        raise Exception("No master file given or found")
+        raise Exception("No main file given or found")
     with open(filename) as f:
         doc = json.load(f)
-        
+
     process_doc(filename, doc, "-sol", "solution", "worksheet") # solutions
     process_doc(filename, doc, "", "worksheet", "solution") # worksheet
 
