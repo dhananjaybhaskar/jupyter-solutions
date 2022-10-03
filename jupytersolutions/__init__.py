@@ -3,49 +3,80 @@ import json
 import os
 from copy import deepcopy
 
-def write_worksheet(filename=None):
+
+import sys
+
+def process_cell(cell, keep_keyword, strip_keyword):
+    """
+    Removes lines which end with the trigger '#{keyword}'
+    """
+    cell = deepcopy(cell)
+    source = []
+    if len(cell['source']) == 0:
+        return cell
+    if cell['source'][0].startswith(f"#{strip_keyword}"):
+        return None
+    for line in cell['source']:
+        if line.strip().endswith(f"#{strip_keyword}"):
+            continue
+        newline = line.replace(f"#{keep_keyword}", "")
+        if line.isspace() or not newline.isspace():
+            source.append(newline)
+    cell['source'] = source
+    return cell
+
+def process_doc(main,
+                original_doc,
+                append_string,
+                keep_keyword,
+                strip_keyword,
+                fix_numbers = True):
+    try:
+        original_doc['metadata']['jupytext']['formats'] = "ipynb"
+    except:
+        pass
+    cells = [process_cell(cell, keep_keyword, strip_keyword) for cell in original_doc['cells']]
+    cells = [cell for cell in cells if cell is not None]
+    doc = deepcopy(original_doc)
+    doc['cells'] = cells
+    if fix_numbers:
+        doc = fix_numbers_doc(doc)
+    newfilename = main.replace("-main",append_string)
+    with open(newfilename,"w") as f:
+        print("Writing " + newfilename)
+        json.dump(doc,f)
+    os.system("jupyter trust " + newfilename)
+
+def write_all(filename=None):
     if filename is None:
         for name in os.listdir("."):
-            if "-master.ipynb" in name:
+            if "-main.ipynb" in name:
                 print("Using " + name)
                 filename = name
                 break
     if filename is None:
-        raise Exception("No master file given or found")
+        raise Exception("No main file given or found")
     with open(filename) as f:
         doc = json.load(f)
 
-    sol_cells = []
-    worksheet_cells = []
+    process_doc(filename, doc, "-sol", "solution", "worksheet") # solutions
+    process_doc(filename, doc, "", "worksheet", "solution") # worksheet
 
+def fix_numbers_doc(doc):
+    i = 0
     for cell in doc['cells']:
-        if 'outputs' in cell:
-            cell['outputs'] = []
-        if 'execution_count' in cell:
-            cell['execution_count'] = None
-        worksheet_source = []
-        sol_source = []
-        for line in cell['source']:
-            if line.startswith("# solution"):
-                break
-            if not line.strip().endswith(" # solution"):
-                worksheet_source.append(line.replace(" # worksheet",""))
-        for line in cell['source']:
-            if line.startswith("# worksheet"):
-                break
-            if not line.strip().endswith(" # worksheet"):
-                sol_source.append(line.replace(" # solution",""))
-        cell['source'] = worksheet_source
-        worksheet_cells.append(deepcopy(cell))
-        cell['source'] = sol_source
-        sol_cells.append(deepcopy(cell))
-        
-    doc['cells'] = sol_cells
-    with open(filename.replace("-master","-sol"),"w") as f:
-        print("Writing " + filename.replace("-master","-sol"))
-        json.dump(doc, f)
+        if 'execution_count' in cell and cell['execution_count'] is not None:
+            i += 1
+            cell['execution_count'] = i
+            for output in cell['outputs']:
+                if 'execution_count' in output and output['execution_count'] is not None:
+                    output['execution_count'] = i
+    return doc
 
-    doc['cells'] = worksheet_cells
-    with open(filename.replace("-master",""), "w") as f:
-        print("Writing " + filename.replace("-master",""))
-        json.dump(doc, f)
+def fix_numbers(filename):
+    import json
+    with open(filename) as f:
+        doc = json.load(f)
+    with open(filename, "w") as f:
+        json.dump(fix_numbers_doc(doc), f)
+    os.system("jupyter trust " + filename)
